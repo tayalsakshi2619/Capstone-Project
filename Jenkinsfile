@@ -6,29 +6,7 @@ pipeline {
 		sh 'echo "Lint check..."'
                 sh 'tidy -q -e *.html'
             }
-        }
-         stage('Lint Dockerfile') {
-             steps {
-                 script {
-                    docker.image('hadolint/hadolint:latest-debian').inside() {
-                            sh 'hadolint Dockerfile | tee -a hadolint_lint.txt'
-                            sh '''
-                                lintErrors=$(stat --printf="%s"  hadolint_lint.txt)
-                                if [ "$lintErrors" -gt "0" ]; then
-                                    echo "Errors have been found, please see below"
-                                    cat hadolint_lint.txt
-                                    slackSend color: "bad", message: "Build Failed -${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
-
-                                    exit 1
-                                else
-                                    echo "There are no erros found on Dockerfile!!"
-                                    slackSend color: "good", message: "Hadolint passed!"
-                                fi
-                            '''
-                    }
-                }
-            }
-	 }  
+        }  
 	stage('Build Docker Image') {
    	    steps {
                 withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
