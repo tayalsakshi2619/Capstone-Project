@@ -29,7 +29,7 @@ pipeline {
                     }
                 }
             }
-	    
+	 }  
 	stage('Build Docker Image') {
    	    steps {
                 withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
