@@ -37,8 +37,7 @@ pipeline {
             }
         }
 	    
-	 
-	stage('Create k8s cluster') {
+	 stage('Create k8s cluster') {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Create k8s cluster..."'
