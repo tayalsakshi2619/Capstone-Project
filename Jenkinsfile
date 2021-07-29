@@ -23,6 +23,7 @@ pipeline {
      	    	    sh '''
                         docker login -u $USERNAME -p $PASSWORD
 			docker push tayalsakshi381/capstone-project-blue-image
+			'''
                     sh 'cd ..'
 	            sh 'echo "Building Docker Green-Image..."'
                     sh 'cd ./Green-Container'
@@ -30,7 +31,6 @@ pipeline {
 		    sh 'echo "Pushing Docker Green-Image..."'
      	    	    sh '''
                         docker login -u $USERNAME -p $PASSWORD
-			docker push tayalsakshi381/capstone-project-blue-image
                         docker push tayalsakshi381/capstone-project-green-image
                     '''
 		}
