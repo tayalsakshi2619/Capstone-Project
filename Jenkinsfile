@@ -1,16 +1,72 @@
 pipeline {
     agent any
     stages {
-        stage('Set current kubectl context') {
-			steps {
-				withAWS(region:'us-west-2', credentials:'AWSCredentials') {
-					sh '''
-						kubectl config use-context arn:aws:eks:us-west-2:982828900997:cluster/SakshiKubeCluster
-					'''
-				}
-			}
-		}
+        stage('Lint HTML') {
+            steps {
+		sh 'echo "Lint check..."'
+                sh 'tidy -q -e ./Blue-Container/index.html'
+                sh 'tidy -q -e ./Green-Container/index.html'
+                echo 'HTML lint successfully completed..'
+		sh 'hadolint ./Blue-Container/Dockerfile'
+                sh 'hadolint ./Green-Container/Dockerfile'
+                echo 'Dockerfile lint successfully completed..'
 
+            }
+        }  
+	stage('Build Docker Image') {
+   	    steps {
+                withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+		    sh 'cd Blue-Container'
+                    sh 'echo "Building Docker Blue-Image..."'
+     	    	    sh 'docker build -t tayalsakshi381/capstone-project-blue-image .'
+                    sh 'cd ..'
+                    sh 'cd Green-Container'
+                    sh 'docker build -t tayalsakshi381/capstone-project-green-image .'
+		}
+            }
+        }
+	    
+	stage('Push Image To Dockerhub') {
+   	    steps {
+                withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+		    sh 'echo "Pushing Docker Image..."'
+     	    	    sh '''
+                        docker login -u $USERNAME -p $PASSWORD
+			docker push tayalsakshi381/capstone-project-blue-image
+                        docker push tayalsakshi381/capstone-project-green-image
+                    '''
+		}
+            }
+        }
+	 
+	stage('Create k8s cluster') {
+	    steps {
+		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
+		    sh 'echo "Create k8s cluster..."'
+		    sh '''
+			eksctl create cluster \
+			--name SakshiKubeCluster \
+			--version 1.21 \
+			--region us-west-2 \
+			--nodegroup-name standard-workers \
+			--node-type t2.micro \
+			--nodes 2 \
+			--nodes-min 1 \
+			--nodes-max 3 \
+			--managed
+		'''
+		}
+	    }
+        }
+	    
+	stage('Configure kubectl') {
+	    steps {
+		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
+		    sh 'echo "Configure kubectl..."'
+		    sh 'aws eks --region us-west-2 update-kubeconfig --name SakshiKubeCluster' 
+		}
+	    }
+        }
 
 	stage('Deploy blue container') {
 	    steps {
@@ -61,3 +117,4 @@ pipeline {
 
      }   
  }
+
