@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Set current kubectl context') {
 			steps {
-				withAWS(region:'us-west-2', credentials:'ecr_credentials') {
+				withAWS(region:'us-west-2', credentials:'AWSCredentials') {
 					sh '''
 						kubectl config use-context arn:aws:cloudformation:us-west-2:982828900997:stack/eksctl-SakshiKubeCluster-cluster/0a917090-f06c-11eb-98a2-024686c260c3
 					'''
