@@ -1,4 +1,5 @@
-Udacity Cloud DevOps Engineer Capstone Project
+                                            **#####Udacity Cloud DevOps Engineer Capstone Project**
+
 In this project I have applied the skills and knowledge which were developed throughout the Cloud DevOps Nanodegree program. These include:
 
  - Working in AWS
@@ -29,7 +30,8 @@ In this project I have applied the skills and knowledge which were developed thr
 4. Set up a webhook url to connect your Git repo with Jenkins
 5. Configure slack so that you can receive notifications about build.
 6. After the configuration is complete, we can go ahead to build and deploy our dockerized app to AWS Kubernetes Cluster.
-          The pipeline looks like this:
+          The pipeline looks like this:![Pipeline](/Screenshots/Pipeline.png)
+         
           
           
   
