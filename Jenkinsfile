@@ -3,7 +3,6 @@ pipeline {
     stages {
         stage('Lint HTML') {
             steps {
-		sudo apt install tidy
 		sh 'echo "Lint check..."'
                 sh 'tidy -q -e *.html'
                 slackSend color: "bad", message: "HTML lint failed!- ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
