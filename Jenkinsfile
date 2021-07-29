@@ -13,23 +13,21 @@ pipeline {
 
             }
         }  
-	stage('Build Docker Image') {
+	stage('Build and Push Docker Image') {
    	    steps {
                 withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'cd Blue-Container'
+		    sh 'cd ./Blue-Container'
                     sh 'echo "Building Docker Blue-Image..."'
      	    	    sh 'docker build -t tayalsakshi381/capstone-project-blue-image .'
+		    sh 'echo "Pushing Docker Blue-Image..."'
+     	    	    sh '''
+                        docker login -u $USERNAME -p $PASSWORD
+			docker push tayalsakshi381/capstone-project-blue-image
                     sh 'cd ..'
-                    sh 'cd Green-Container'
+	            sh 'echo "Building Docker Green-Image..."'
+                    sh 'cd ./Green-Container'
                     sh 'docker build -t tayalsakshi381/capstone-project-green-image .'
-		}
-            }
-        }
-	    
-	stage('Push Image To Dockerhub') {
-   	    steps {
-                withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'echo "Pushing Docker Image..."'
+		    sh 'echo "Pushing Docker Green-Image..."'
      	    	    sh '''
                         docker login -u $USERNAME -p $PASSWORD
 			docker push tayalsakshi381/capstone-project-blue-image
@@ -38,6 +36,7 @@ pipeline {
 		}
             }
         }
+	    
 	 
 	stage('Create k8s cluster') {
 	    steps {
@@ -72,7 +71,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Deploy blue container..."'
-		    sh 'kubectl apply -f blue-controller.json'
+		    sh 'kubectl apply -f ./Blue-Container/blue-controller.json'
 		}
 	    }
 	}
@@ -81,7 +80,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Deploy green container..."'
-		    sh 'kubectl apply -f green-controller.json'
+		    sh 'kubectl apply -f ./Green-Container/green-controller.json'
 		}
 	    }
 	}
@@ -90,7 +89,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Create blue service..."'
-		    sh 'kubectl apply -f blue-service.json'
+		    sh 'kubectl apply -f ./Blue-Container/blue-service.json'
 		}
 	    }
 	}
@@ -104,7 +103,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Update service to green..."'
-		    sh 'kubectl apply -f green-service.json'
+		    sh 'kubectl apply -f ./Green-Container/green-service.json'
 		}
 	    }
          }
