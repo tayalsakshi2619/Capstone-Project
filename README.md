@@ -1,4 +1,4 @@
-#####Udacity Cloud DevOps Engineer Capstone Project
+**####Udacity Cloud DevOps Engineer Capstone Project
 
 In this project I have applied the skills and knowledge which were developed throughout the Cloud DevOps Nanodegree program. These include:
 
