@@ -16,7 +16,7 @@ pipeline {
 	stage('Build and Push Docker Image') {
    	    steps {
                 withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'cd ./Blue-Container'
+		    sh 'cd Blue-Container'
                     sh 'echo "Building Docker Blue-Image..."'
      	    	    sh 'docker build -t tayalsakshi381/capstone-project-blue-image .'
 		    sh 'echo "Pushing Docker Blue-Image..."'
@@ -26,7 +26,7 @@ pipeline {
 			'''
                     sh 'cd ..'
 	            sh 'echo "Building Docker Green-Image..."'
-                    sh 'cd ./Green-Container'
+                    sh 'cd Green-Container'
                     sh 'docker build -t tayalsakshi381/capstone-project-green-image .'
 		    sh 'echo "Pushing Docker Green-Image..."'
      	    	    sh '''
