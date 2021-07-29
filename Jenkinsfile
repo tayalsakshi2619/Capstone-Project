@@ -1,68 +1,22 @@
 pipeline {
     agent any
     stages {
-        stage('Lint HTML') {
-            steps {
-		sh 'echo "Lint check..."'
-                sh 'tidy -q -e *.html'
-		sh 'hadolint Dockerfile'
-            }
-        }  
-	stage('Build Docker Image') {
-   	    steps {
-                withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'echo "Building Docker Image..."'
-     	    	    sh 'docker build -t tayalsakshi381/capstone-project .'
+        stage('Set current kubectl context') {
+			steps {
+				withAWS(region:'us-west-2', credentials:'ecr_credentials') {
+					sh '''
+						kubectl config use-context arn:aws:cloudformation:us-west-2:982828900997:stack/eksctl-SakshiKubeCluster-cluster/0a917090-f06c-11eb-98a2-024686c260c3
+					'''
+				}
+			}
 		}
-            }
-        }
-	    
-	stage('Push Image To Dockerhub') {
-   	    steps {
-                withCredentials([usernamePassword(credentialsId: 'Dockerhub_ID', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-		    sh 'echo "Pushing Docker Image..."'
-     	    	    sh '''
-                        docker login -u $USERNAME -p $PASSWORD
-			docker push tayalsakshi381/capstone-project
-                    '''
-		}
-            }
-        }
-	 
-	stage('Create k8s cluster') {
-	    steps {
-		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
-		    sh 'echo "Create k8s cluster..."'
-		    sh '''
-			eksctl create cluster \
-			--name SakshiKubeCluster \
-			--version 1.21 \
-			--region us-west-2 \
-			--nodegroup-name standard-workers \
-			--node-type t2.micro \
-			--nodes 2 \
-			--nodes-min 1 \
-			--nodes-max 3 \
-			--managed
-		'''
-		}
-	    }
-        }
-	    
-	stage('Configure kubectl') {
-	    steps {
-		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
-		    sh 'echo "Configure kubectl..."'
-		    sh 'aws eks --region us-west-2 update-kubeconfig --name SakshiKubeCluster' 
-		}
-	    }
-        }
+
 
 	stage('Deploy blue container') {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Deploy blue container..."'
-		    sh 'kubectl apply -f blue.yaml'
+		    sh 'kubectl apply -f ./blue.yaml'
 		}
 	    }
 	}
@@ -71,7 +25,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Deploy green container..."'
-		    sh 'kubectl apply -f green.yaml'
+		    sh 'kubectl apply -f ./green.yaml'
 		}
 	    }
 	}
@@ -80,7 +34,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Create blue service..."'
-		    sh 'kubectl apply -f blue_service.yaml'
+		    sh 'kubectl apply -f ./blue_service.yaml'
 		}
 	    }
 	}
@@ -94,7 +48,7 @@ pipeline {
 	    steps {
 		withAWS(credentials: 'AWSCredentials', region: 'us-west-2') {
 		    sh 'echo "Update service to green..."'
-		    sh 'kubectl apply -f green_service.yaml'
+		    sh 'kubectl apply -f ./green_service.yaml'
 		}
 	    }
          }
